@@ -9,9 +9,9 @@
 
 const int TRIGGER_IN = 4;
 const int CANNON_1 = 10;
-const int CANNON_2 = 0;
-const int CANNON_3 = 0;
-const int CANNON_4 = 0;
+//const int CANNON_2 = 0;
+//const int CANNON_3 = 0;
+//const int CANNON_4 = 0;
 const int LED_PIN = 12;
 
 const int TIME_ENABLE = 5;
@@ -24,7 +24,10 @@ const int VALVE_OFF = 0;
 //OPERATION PARAMETERS
 unsigned int debounceDelay = 40; //milliseconds - how long to press before firing
 unsigned int resetTime = 3 * 1000; //convert to seconds
-unsigned int shotInterval = 300; //valve open period; milliseconds
+unsigned int shotInterval = 70; //valve open period; milliseconds
+
+const int MIN_SHOT_INTERVAL = 10;
+const int MAX_SHOT_INTERVAL = 400;
 
 //state timers
 unsigned long loopTime = 0; //set time at start of each loop
@@ -81,7 +84,7 @@ void setup() {
   timerDisplay.writeDisplay();
 
   loopTime = millis();
-  lastTriggerTime = loopTime - 4000; //delays trigger enable initially
+  lastTriggerTime = loopTime - 4000; //delays 'trigger enable' initially while states get set
 }
 
 void loop() {
@@ -96,11 +99,11 @@ void loop() {
 
   if (timeEnableButtonState == LOW) { // ADJUST FIRING TIME
     if (timeDownButtonState == LOW) {
-      shotInterval = max(shotInterval - 10, 40);
+      shotInterval = max(shotInterval - 5, MIN_SHOT_INTERVAL);
       delay(50);
     }
     else if (timeUpButtonState == LOW) {
-      shotInterval = min(shotInterval + 10, 1500);
+      shotInterval = min(shotInterval + 5, MAX_SHOT_INTERVAL);
       delay(50);
     }
   }
@@ -112,8 +115,6 @@ void loop() {
       triggerDisable = 1;
       shotCycleCounter = 0;
     }
-    //timerDisplay.print(0xFFFF, HEX);
-    //timerDisplay.writeDisplay();
   }
   else if (triggerButtonState == HIGH) {
     lightRing.fill(0x009000); // light green for ready
@@ -144,11 +145,8 @@ void loop() {
   timerDisplay.writeDisplay();
   lightRing.show();
 
-  //SET VALVES - maybe this needs to latched so pin isn't constantly set?
+  //SET VALVES
   digitalWrite(CANNON_1, valveState);
-  digitalWrite(CANNON_2, valveState);
-  digitalWrite(CANNON_3, valveState);
-  digitalWrite(CANNON_4, valveState);
 
 }
 
